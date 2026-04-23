@@ -17,6 +17,10 @@ public:
     /// @param dialog The dialog to show.
     void ShowDialog(SharedPtr<DialogView> dialog);
 
+    /// @brief Replaces the current dialog with the given dialog instantly.
+    /// @param dialog The dialog to show.
+    void ReplaceDialog(SharedPtr<DialogView> dialog);
+
     /// @brief Closes the current dialog.
     void CloseDialog();
 

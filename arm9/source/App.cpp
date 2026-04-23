@@ -291,20 +291,20 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
             _changeDisplayMode = true;
             break;
         }
+        case RomBrowserStateTrigger::ShowCheats:
+        {
+            HandleShowCheatsTrigger();
+            break;
+        }
     }
 }
 
 void App::HandleShowGameInfoTrigger()
 {
-    // auto gameInfoDialog = std::make_unique<NdsGameDetailsBottomSheetView>(
-    //     &_romBrowserController, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository());
-    // gameInfoDialog->SetGraphics(_chipViewVram);
-    // _dialogPresenter.ShowDialog(std::move(gameInfoDialog));
-
-    auto cheatsViewModel = SharedPtr<CheatsViewModel>::MakeShared(_romBrowserController.GetTriggerFileInfo(), &_romBrowserController);
-    auto cheatsDialog = CheatsBottomSheetView::CreateShared(
-        std::move(cheatsViewModel), &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_focusManager);
-    _dialogPresenter.ShowDialog(std::move(cheatsDialog));
+    auto gameInfoDialog = NdsGameDetailsBottomSheetView::CreateShared(
+        &_romBrowserController, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository());
+    gameInfoDialog->SetGraphics(_chipViewVram);
+    _dialogPresenter.ShowDialog(std::move(gameInfoDialog));
 }
 
 void App::HandleHideGameInfoTrigger()
@@ -312,6 +312,16 @@ void App::HandleHideGameInfoTrigger()
     _dialogPresenter.CloseDialog();
     if (!_dialogPresenter.GetOldFocus())
         _romBrowserBottomScreenView->Focus(_focusManager);
+}
+
+void App::HandleShowCheatsTrigger()
+{
+    auto cheatsViewModel = SharedPtr<CheatsViewModel>::MakeShared(
+        _romBrowserController.GetTriggerFileInfo(), &_romBrowserController);
+    auto cheatsDialog = CheatsBottomSheetView::CreateShared(
+        std::move(cheatsViewModel), &_theme->GetMaterialColorScheme(),
+        _theme->GetFontRepository(), &_focusManager);
+    _dialogPresenter.ReplaceDialog(std::move(cheatsDialog));
 }
 
 void App::HandleShowDisplaySettingsTrigger()

@@ -49,6 +49,11 @@ public:
         return _appSettingsService->GetAppSettings().romBrowserDisplaySettings;
     }
 
+    const AppSettings& GetAppSettings() const override
+    {
+        return _appSettingsService->GetAppSettings();
+    }
+
     virtual const FileInfo& GetTriggerFileInfo() const override { return _triggerFileInfo; }
 
 private:
@@ -77,4 +82,9 @@ private:
     void UpdateLastUsedFilepath();
     void SetPicoLoaderParams() const;
     void LoadCheats() const;
+    void ToggleFavorite(const FileInfo& fileInfo) override;
+    bool IsFavorite(const FileInfo& fileInfo) const override;
+    void ToggleShowFavoritesOnly() override;
+    void GetCurrentPath(char* path, u32 maxLen) const override;
+    void ShowCheats() override;
 };

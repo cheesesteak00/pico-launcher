@@ -9,4 +9,5 @@ public:
     virtual AppSettings& GetAppSettings() = 0;
     virtual const AppSettings& GetAppSettings() const = 0;
     virtual void Save() const = 0;
+    virtual void SaveFavorites() const = 0;
 };

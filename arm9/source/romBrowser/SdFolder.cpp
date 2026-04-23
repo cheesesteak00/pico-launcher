@@ -1,6 +1,7 @@
 #include "common.h"
 #include <string.h>
 #include <algorithm>
+#include "core/PathUtil.h"
 #include "SdFolder.h"
 
 SdFolder::SdFolder(FileInfo** files, int fileCount)
@@ -11,6 +12,25 @@ SdFolder::~SdFolder()
     for (int i = 0; i < _fileCount; i++)
         delete _files[i];
     free(_files);
+}
+
+static bool IsFileInFavorites(const FileInfo* file, const SdFolderFilterSortParams& params)
+{
+    if (!params.showFavoritesOnly || params.favoritePaths == nullptr || params.currentPath == nullptr)
+        return true;
+
+    if (file->GetFileType()->GetClassification() == FileTypeClassification::Folder)
+        return true;
+
+    char fullPath[256];
+    PathUtil::JoinPath(params.currentPath, file->GetFileName(), fullPath, sizeof(fullPath));
+
+    for (u32 i = 0; i < params.numberOfFavorites; i++)
+    {
+        if (strcmp(fullPath, params.favoritePaths[i].GetString()) == 0)
+            return true;
+    }
+    return false;
 }
 
 std::unique_ptr<const FileInfo*[]> SdFolder::FilterAndSort(
@@ -24,7 +44,8 @@ std::unique_ptr<const FileInfo*[]> SdFolder::FilterAndSort(
         bool isHidden = file->GetFileName()[0] == '.' || file->IsHidden();
         auto classification = file->GetFileType()->GetClassification();
         if (classification != FileTypeClassification::Unknown &&
-            (!isHidden || filterSortParams.includeHiddenFiles))
+            (!isHidden || filterSortParams.includeHiddenFiles) &&
+            IsFileInFavorites(file, filterSortParams))
         {
             sortedFilteredFiles[filteredCount++] = file;
         }

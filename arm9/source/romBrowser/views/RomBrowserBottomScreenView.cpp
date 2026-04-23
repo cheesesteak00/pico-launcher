@@ -112,6 +112,11 @@ bool RomBrowserBottomScreenView::HandleInput(const InputProvider& inputProvider,
         _viewModel->NavigateUp();
         return true;
     }
+    if (inputProvider.Triggered(InputKey::X))
+    {
+        _viewModel->ToggleShowFavoritesOnly();
+        return true;
+    }
     return View::HandleInput(inputProvider, focusManager);
 }
 

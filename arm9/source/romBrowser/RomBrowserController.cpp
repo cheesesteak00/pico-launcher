@@ -5,6 +5,7 @@
 #include "FileType/ExtensionFileTypeProvider.h"
 #include "FileType/FileType.h"
 #include "SdFolderFactory.h"
+#include "core/PathUtil.h"
 #include "services/settings/IAppSettingsService.h"
 #include "cheats/UsrCheatRepositoryFactory.h"
 #include "cheats/EmptyCheatRepository.h"
@@ -237,4 +238,80 @@ void RomBrowserController::LoadCheats() const
     auto cheats = _cheatRepository->GetCheatsForGame(_triggerFileInfo.GetFastFileRef());
     auto cheatData = PicoLoaderCheatDataFactory().CreateCheatData(cheats);
     pload_setCheatData(cheatData);
+}
+
+void RomBrowserController::GetCurrentPath(char* path, u32 maxLen) const
+{
+    f_getcwd(path, maxLen);
+}
+
+bool RomBrowserController::IsFavorite(const FileInfo& fileInfo) const
+{
+    const auto& settings = _appSettingsService->GetAppSettings();
+    if (settings.numberOfFavorites == 0)
+        return false;
+
+    char cwd[256];
+    GetCurrentPath(cwd, sizeof(cwd));
+    char path[256];
+    PathUtil::JoinPath(cwd, fileInfo.GetFileName(), path, sizeof(path));
+
+    for (u32 i = 0; i < settings.numberOfFavorites; i++)
+    {
+        if (strcmp(path, settings.favoritePaths[i].GetString()) == 0)
+            return true;
+    }
+    return false;
+}
+
+void RomBrowserController::ToggleFavorite(const FileInfo& fileInfo)
+{
+    char cwd[256];
+    GetCurrentPath(cwd, sizeof(cwd));
+    char path[256];
+    PathUtil::JoinPath(cwd, fileInfo.GetFileName(), path, sizeof(path));
+
+    auto& settings = _appSettingsService->GetAppSettings();
+
+    for (u32 i = 0; i < settings.numberOfFavorites; i++)
+    {
+        if (strcmp(path, settings.favoritePaths[i].GetString()) == 0)
+        {
+            for (u32 j = i; j < settings.numberOfFavorites - 1; j++)
+                settings.favoritePaths[j] = settings.favoritePaths[j + 1];
+            settings.numberOfFavorites--;
+            _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
+            {
+                _appSettingsService->SaveFavorites();
+                return TaskResult<void>::Completed();
+            });
+            return;
+        }
+    }
+
+    if (settings.numberOfFavorites < AppSettings::MAX_FAVORITES)
+    {
+        if (!settings.favoritePaths)
+            settings.favoritePaths = std::make_unique<String<char, 256>[]>(AppSettings::MAX_FAVORITES);
+        settings.favoritePaths[settings.numberOfFavorites] = path;
+        settings.numberOfFavorites++;
+        _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
+        {
+            _appSettingsService->SaveFavorites();
+            return TaskResult<void>::Completed();
+        });
+    }
+}
+
+void RomBrowserController::ShowCheats()
+{
+    _stateMachine.Fire(RomBrowserStateTrigger::ShowCheats);
+}
+
+void RomBrowserController::ToggleShowFavoritesOnly()
+{
+    auto& settings = _appSettingsService->GetAppSettings();
+    settings.romBrowserDisplaySettings.showFavoritesOnly = !settings.romBrowserDisplaySettings.showFavoritesOnly;
+    _saveSettingsPending = true;
+    _stateMachine.Fire(RomBrowserStateTrigger::ChangeDisplayMode);
 }

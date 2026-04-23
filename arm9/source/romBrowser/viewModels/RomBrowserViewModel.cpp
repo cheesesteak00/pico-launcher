@@ -29,6 +29,19 @@ RomBrowserViewModel::RomBrowserViewModel(IRomBrowserController* romBrowserContro
             break;
         }
     }
+
+    const auto& displaySettings = romBrowserController->GetRomBrowserDisplaySettings();
+    filterSortParams.showFavoritesOnly = displaySettings.showFavoritesOnly;
+    char currentPath[256];
+    if (filterSortParams.showFavoritesOnly)
+    {
+        romBrowserController->GetCurrentPath(currentPath, sizeof(currentPath));
+        filterSortParams.currentPath = currentPath;
+        const auto& appSettings = romBrowserController->GetAppSettings();
+        filterSortParams.favoritePaths = appSettings.favoritePaths.get();
+        filterSortParams.numberOfFavorites = appSettings.numberOfFavorites;
+    }
+
     u64 startTick = gTickCounter.GetValue();
     const auto& sdFolder = romBrowserController->GetSdFolder();
     int filteredCount;

@@ -41,6 +41,13 @@ public:
     virtual void SetRomBrowserDisplaySettings(
         const RomBrowserDisplaySettings& romBrowserDisplaySettings) = 0;
 
+    virtual void ToggleFavorite(const FileInfo& fileInfo) = 0;
+    virtual bool IsFavorite(const FileInfo& fileInfo) const = 0;
+    virtual void ToggleShowFavoritesOnly() = 0;
+    virtual void GetCurrentPath(char* path, u32 maxLen) const = 0;
+    virtual const AppSettings& GetAppSettings() const = 0;
+    virtual void ShowCheats() = 0;
+
     virtual const FileInfo& GetTriggerFileInfo() const = 0;
 };
 

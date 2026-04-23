@@ -38,6 +38,11 @@ public:
         _romBrowserController->NavigateUp();
     }
 
+    void ToggleShowFavoritesOnly()
+    {
+        _romBrowserController->ToggleShowFavoritesOnly();
+    }
+
 private:
     IRomBrowserController* _romBrowserController;
     RomBrowserAppBarViewModel _romBrowserAppBarViewModel;

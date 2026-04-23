@@ -38,6 +38,21 @@ public:
         }
     }
 
+    bool GetShowFavoritesOnly() const
+    {
+        return _romBrowserController->GetRomBrowserDisplaySettings().showFavoritesOnly;
+    }
+
+    void SetShowFavoritesOnly(bool showFavoritesOnly)
+    {
+        auto settings = _romBrowserController->GetRomBrowserDisplaySettings();
+        if (settings.showFavoritesOnly != showFavoritesOnly)
+        {
+            settings.showFavoritesOnly = showFavoritesOnly;
+            _romBrowserController->SetRomBrowserDisplaySettings(settings);
+        }
+    }
+
     void Close()
     {
         _romBrowserController->HideDisplaySettings();

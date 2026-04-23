@@ -24,6 +24,15 @@ void DialogPresenter::ShowDialog(SharedPtr<DialogView> dialog)
     }
 }
 
+void DialogPresenter::ReplaceDialog(SharedPtr<DialogView> dialog)
+{
+    _currentDialog.Reset();
+    _currentDialog = std::move(dialog);
+    _initVram = true;
+    if (_currentDialog)
+        _currentDialog->Focus(*_focusManager);
+}
+
 void DialogPresenter::CloseDialog()
 {
     if (!_currentDialog || _curState != State::BottomSheetVisible)

@@ -45,4 +45,8 @@ private:
         IRomBrowserController* romBrowserController,
         const MaterialColorScheme* materialColorScheme,
         const IFontRepository* fontRepository);
+
+    void UpdateFavoriteChipState();
+    void OnFavoriteActivated();
+    void OnCheatsActivated();
 };

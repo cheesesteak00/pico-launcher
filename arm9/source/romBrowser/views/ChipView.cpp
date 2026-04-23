@@ -130,6 +130,35 @@ void ChipView::DrawIcon(GraphicsContext& graphicsContext, const Rgb<8, 8, 8>& fg
         .Build(iconOam[0]);
 }
 
+void ChipView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (GetBounds().Contains(touchPoint))
+    {
+        _penDown = true;
+    }
+}
+
+void ChipView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (!GetBounds().Contains(touchPoint))
+    {
+        _penDown = false;
+    }
+}
+
+void ChipView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    if (_penDown && GetBounds().Contains(lastTouchPoint))
+    {
+        focusManager.Focus(SharedFromThis());
+        if (_action)
+        {
+            _action(this, _actionArg);
+        }
+    }
+    _penDown = false;
+}
+
 ChipView::VramToken ChipView::UploadGraphics(IVramManager& vramManager)
 {
     u32 vramOffset = vramManager.Alloc(chipFilledTilesLen);

@@ -18,10 +18,35 @@ NdsGameDetailsBottomSheetView::NdsGameDetailsBottomSheetView(
 {
     _cheatsChip->SetText(u"Cheats");
     _cheatsChip->SetSelected(false);
+    _cheatsChip->SetAction([] (ChipView*, void* arg)
+    {
+        ((NdsGameDetailsBottomSheetView*)arg)->OnCheatsActivated();
+    }, this);
     AddChildTail(_cheatsChip.GetPointer());
     _favoriteChip->SetText(u"Favorite");
-    _favoriteChip->SetSelected(true);
+    _favoriteChip->SetAction([] (ChipView*, void* arg)
+    {
+        ((NdsGameDetailsBottomSheetView*)arg)->OnFavoriteActivated();
+    }, this);
     AddChildTail(_favoriteChip.GetPointer());
+}
+
+void NdsGameDetailsBottomSheetView::UpdateFavoriteChipState()
+{
+    bool isFav = _romBrowserController->IsFavorite(_romBrowserController->GetTriggerFileInfo());
+    _favoriteChip->SetIcon(true, isFav ? _smallHeartIconFilledVramOffset : _smallHeartIconVramOffset);
+    _favoriteChip->SetSelected(isFav);
+}
+
+void NdsGameDetailsBottomSheetView::OnFavoriteActivated()
+{
+    _romBrowserController->ToggleFavorite(_romBrowserController->GetTriggerFileInfo());
+    UpdateFavoriteChipState();
+}
+
+void NdsGameDetailsBottomSheetView::OnCheatsActivated()
+{
+    _romBrowserController->ShowCheats();
 }
 
 void NdsGameDetailsBottomSheetView::InitVram(const VramContext& vramContext)
@@ -37,7 +62,7 @@ void NdsGameDetailsBottomSheetView::InitVram(const VramContext& vramContext)
         _smallHeartIconFilledVramOffset = objVramManager->Alloc(smallHeartIconFilledTilesLen);
         dma_ntrCopy32(3, smallHeartIconFilledTiles, objVramManager->GetVramAddress(_smallHeartIconFilledVramOffset), smallHeartIconFilledTilesLen);
 
-        _favoriteChip->SetIcon(true, _smallHeartIconFilledVramOffset);
+        UpdateFavoriteChipState();
     }
 }
 
@@ -75,6 +100,19 @@ bool NdsGameDetailsBottomSheetView::HandleInput(const InputProvider& inputProvid
     {
         _romBrowserController->HideGameInfo();
         return true;
+    }
+    if (inputProvider.Triggered(InputKey::A))
+    {
+        if (focusManager.GetCurrentFocus().GetPointer() == _favoriteChip.GetPointer())
+        {
+            OnFavoriteActivated();
+            return true;
+        }
+        if (focusManager.GetCurrentFocus().GetPointer() == _cheatsChip.GetPointer())
+        {
+            OnCheatsActivated();
+            return true;
+        }
     }
     return false;
 }
