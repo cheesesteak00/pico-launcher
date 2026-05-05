@@ -61,7 +61,7 @@ ROM		:= $(NAME).nds
 
 .PHONY: all clean arm9 arm7 dldipatch sdimage checklibtwl
 
-all: $(ROM)
+all: dldipatch
 
 clean:
 	@echo "  CLEAN"
@@ -107,4 +107,4 @@ sdimage:
 dldipatch: $(ROM)
 	@echo "  DLDIPATCH $(ROM)"
 	$(V)$(BLOCKSDS)/tools/dldipatch/dldipatch patch \
-		$(BLOCKSDS)/sys/dldi_r4/r4tf.dldi $(ROM)
+		DSpico.dldi $(ROM)
