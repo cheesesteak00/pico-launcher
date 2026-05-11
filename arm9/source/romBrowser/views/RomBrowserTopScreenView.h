@@ -8,6 +8,9 @@
 
 class RomBrowserViewModel;
 class IRomBrowserViewFactory;
+class Label2DView;
+class IFontRepository;
+struct MaterialColorScheme;
 
 class RomBrowserTopScreenView : public ViewContainer
 {
@@ -29,7 +32,9 @@ private:
     SharedPtr<BannerView> _fileInfoView;
     std::unique_ptr<FileIcon> _selectedFileIcon;
     SharedPtr<FileCover> _selectedFileCover;
+    SharedPtr<Label2DView> _clockLabel;
     int _lastSelectedItem = -1;
+    int _frameCounter = 0;
     bool _iconGraphicsUploaded = false;
     bool _coverGraphicsUploaded = false;
     bool _showCover;
@@ -38,5 +43,7 @@ private:
     RomBrowserTopScreenView(SharedPtr<RomBrowserViewModel> viewModel,
         const RomBrowserDisplayMode* displayMode,
         const IThemeFileIconFactory* themeFileIconFactory,
-        const IRomBrowserViewFactory* romBrowserViewFactory);
+        const IRomBrowserViewFactory* romBrowserViewFactory,
+        const IFontRepository* fontRepository,
+        const MaterialColorScheme* materialColorScheme);
 };

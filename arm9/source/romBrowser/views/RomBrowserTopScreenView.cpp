@@ -7,7 +7,12 @@
 #include "../viewModels/RomBrowserViewModel.h"
 #include "gui/GraphicsContext.h"
 #include "gui/IVramManager.h"
+#include "gui/views/Label2DView.h"
+#include "themes/IFontRepository.h"
 #include "themes/material/MaterialColorScheme.h"
+#include "gui/Alignment.h"
+#include "rtcIpc.h"
+#include "core/mini-printf.h"
 #include "../Theme/IRomBrowserViewFactory.h"
 #include "RomBrowserTopScreenView.h"
 
@@ -15,14 +20,22 @@ RomBrowserTopScreenView::RomBrowserTopScreenView(
     SharedPtr<RomBrowserViewModel> viewModel,
     const RomBrowserDisplayMode* displayMode,
     const IThemeFileIconFactory* themeFileIconFactory,
-    const IRomBrowserViewFactory* romBrowserViewFactory)
+    const IRomBrowserViewFactory* romBrowserViewFactory,
+    const IFontRepository* fontRepository,
+    const MaterialColorScheme* materialColorScheme)
     : _viewModel(std::move(viewModel))
     , _themeFileIconFactory(themeFileIconFactory)
     , _fileInfoView(romBrowserViewFactory->CreateFileInfoView())
+    , _clockLabel(Label2DView::CreateShared(64, 16, 6, fontRepository->GetFont(FontType::Medium10)))
     , _showCover(displayMode->ShowCoverOnTopScreen())
     , _coverPosition(romBrowserViewFactory->GetTopCoverPosition())
 {
+    _clockLabel->SetPosition(180, 4);
+    _clockLabel->SetHorizontalAlignment(Alignment::End);
+    _clockLabel->SetBackgroundColor(materialColorScheme->secondaryContainer);
+    _clockLabel->SetForegroundColor(materialColorScheme->onSecondaryContainer);
     AddChildTail(_fileInfoView.GetPointer());
+    AddChildTail(_clockLabel.GetPointer());
 }
 
 void RomBrowserTopScreenView::InitVram(const VramContext& vramContext)
@@ -105,6 +118,19 @@ void RomBrowserTopScreenView::Update()
             }
         }
     }
+
+    _frameCounter++;
+    if (_frameCounter == 1 || _frameCounter % 60 == 0)
+    {
+        rtc_datetime_t dt;
+        rtc_readDateTime(&dt);
+        u8 hour = ((dt.time.hour >> 4) & 0xF) * 10 + (dt.time.hour & 0xF);
+        u8 minute = ((dt.time.minute >> 4) & 0xF) * 10 + (dt.time.minute & 0xF);
+        char timeStr[6];
+        snprintf(timeStr, sizeof(timeStr), "%02d:%02d", hour, minute);
+        _clockLabel->SetText(timeStr);
+    }
+
     ViewContainer::Update();
 }
 

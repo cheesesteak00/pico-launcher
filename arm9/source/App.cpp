@@ -355,7 +355,9 @@ void App::HandleFolderLoadDoneTrigger()
         _romBrowserController.GetRomBrowserViewModel(),
         displayMode,
         _materialThemeFileIconFactory.get(),
-        _theme->GetRomBrowserViewFactory());
+        _theme->GetRomBrowserViewFactory(),
+        _theme->GetFontRepository(),
+        &_theme->GetMaterialColorScheme());
     _romBrowserTopScreenView->InitVram(_subVramContext);
     _romBrowserBottomScreenView->RomBrowserViewModelInvalidated(_mainVramContext);
     if (!_focusManager.GetCurrentFocus())
@@ -380,7 +382,9 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
         _romBrowserController.GetRomBrowserViewModel(),
         displayMode,
         _materialThemeFileIconFactory.get(),
-        _theme->GetRomBrowserViewFactory());
+        _theme->GetRomBrowserViewFactory(),
+        _theme->GetFontRepository(),
+        &_theme->GetMaterialColorScheme());
     _romBrowserTopScreenView->InitVram(_subVramContext);
     _romBrowserBottomScreenView->RomBrowserViewModelInvalidated(_mainVramContext);
     if (newState == RomBrowserState::Browser)
