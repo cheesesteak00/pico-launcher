@@ -6,6 +6,8 @@
 #include "FileType/FileType.h"
 #include "SdFolderFactory.h"
 #include "core/PathUtil.h"
+#include "core/Environment.h"
+#include "brightnessIpc.h"
 #include "services/settings/IAppSettingsService.h"
 #include "cheats/UsrCheatRepositoryFactory.h"
 #include "cheats/EmptyCheatRepository.h"
@@ -308,10 +310,17 @@ void RomBrowserController::ShowCheats()
     _stateMachine.Fire(RomBrowserStateTrigger::ShowCheats);
 }
 
-void RomBrowserController::ToggleShowFavoritesOnly()
+void RomBrowserController::CycleBrightness()
 {
     auto& settings = _appSettingsService->GetAppSettings();
-    settings.romBrowserDisplaySettings.showFavoritesOnly = !settings.romBrowserDisplaySettings.showFavoritesOnly;
-    _saveSettingsPending = true;
-    _stateMachine.Fire(RomBrowserStateTrigger::ChangeDisplayMode);
+    u8 maxLevel = Environment::IsDsiMode() ? 4 : 3;
+    u8 newLevel = (settings.brightnessLevel >= maxLevel) ? 0 : settings.brightnessLevel + 1;
+    settings.brightnessLevel = newLevel;
+    _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
+    {
+        _appSettingsService->Save();
+        return TaskResult<void>::Completed();
+    });
+    brightness_setLevel(newLevel);
 }
+

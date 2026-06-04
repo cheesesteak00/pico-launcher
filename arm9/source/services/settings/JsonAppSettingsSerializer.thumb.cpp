@@ -16,6 +16,7 @@
 #define KEY_LAST_USED_FILE_PATH      "lastUsedFilePath"
 #define KEY_FILE_ASSOCIATIONS        "fileAssociations"
 #define KEY_FILE_ASSOCIATIONS_APPLICATION_PATH  "appPath"
+#define KEY_BRIGHTNESS_LEVEL         "brightnessLevel"
 
 static const char* serializeRomBrowserLayout(RomBrowserLayout romBrowserLayout)
 {
@@ -129,6 +130,7 @@ static std::unique_ptr<u8[]> writeJson(const AppSettings* appSettings, u32& leng
     json[KEY_ROM_BROWSER_SORT_MODE] = serializeRomBrowserSortMode(appSettings->romBrowserDisplaySettings.sortMode);
     json[KEY_THEME] = appSettings->theme.GetString();
     json[KEY_LAST_USED_FILE_PATH] = appSettings->lastUsedFilePath.GetString();
+    json[KEY_BRIGHTNESS_LEVEL] = appSettings->brightnessLevel;
     serializeFileAssociations(json, appSettings);
 
     u32 outputSize = measureJsonPretty(json);
@@ -180,6 +182,10 @@ static void readJson(AppSettings* appSettings, const JsonDocument& json)
     {
         appSettings->romBrowserDisplaySettings.sortMode = romBrowserSortMode;
     }
+
+    auto brightnessLevel = json[KEY_BRIGHTNESS_LEVEL];
+    if (!brightnessLevel.isNull())
+        appSettings->brightnessLevel = brightnessLevel.as<u8>();
 
     tryParseFileAssociations(json[KEY_FILE_ASSOCIATIONS], appSettings);
 }

@@ -24,6 +24,7 @@
 #include "romBrowser/views/DisplaySettingsBottomSheetView.h"
 #include "bgm/AudioStreamPlayer.h"
 #include "bgm/BgmService.h"
+#include "brightnessIpc.h"
 #include "themes/ThemeInfoFactory.h"
 #include "themes/ThemeFactory.h"
 #include "gui/Gx.h"
@@ -114,6 +115,8 @@ void App::VCountIrq()
 
 void App::Run()
 {
+    brightness_setLevel(_appSettingsService.GetAppSettings().brightnessLevel);
+
     InitVramMapping();
     DisplaySplashScreen();
     gx_init();

@@ -40,7 +40,9 @@ public:
 
     void ToggleShowFavoritesOnly()
     {
-        _romBrowserController->ToggleShowFavoritesOnly();
+        auto settings = _romBrowserController->GetRomBrowserDisplaySettings();
+        settings.showFavoritesOnly = !settings.showFavoritesOnly;
+        _romBrowserController->SetRomBrowserDisplaySettings(settings);
     }
 
 private:

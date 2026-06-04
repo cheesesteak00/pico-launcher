@@ -18,6 +18,11 @@ public:
         _romBrowserController->ShowDisplaySettings();
     }
 
+    void CycleBrightness()
+    {
+        _romBrowserController->CycleBrightness();
+    }
+
     constexpr RomBrowserLayout GetRomBrowserLayout() const
     {
         return _romBrowserController->GetRomBrowserDisplaySettings().layout;

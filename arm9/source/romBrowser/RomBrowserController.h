@@ -84,7 +84,7 @@ private:
     void LoadCheats() const;
     void ToggleFavorite(const FileInfo& fileInfo) override;
     bool IsFavorite(const FileInfo& fileInfo) const override;
-    void ToggleShowFavoritesOnly() override;
     void GetCurrentPath(char* path, u32 maxLen) const override;
     void ShowCheats() override;
+    void CycleBrightness() override;
 };

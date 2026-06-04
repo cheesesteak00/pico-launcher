@@ -27,6 +27,7 @@
 #include "ipcServices/DldiIpcService.h"
 #include "ipcServices/SoundIpcService.h"
 #include "ipcServices/RtcIpcService.h"
+#include "ipcServices/BrightnessIpcService.h"
 #include "ExitMode.h"
 #include "Arm7State.h"
 #include "mmc/tmio.h"
@@ -40,6 +41,7 @@ static DsiSdIpcService sDsiSdIpcService;
 static DldiIpcService sDldiIpcService;
 static SoundIpcService sSoundIpcService;
 static RtcIpcService sRtcIpcService;
+static BrightnessIpcService sBrightnessIpcService;
 
 ILogger* gLogger = &sThreadSafeLogger;
 
@@ -141,6 +143,7 @@ static void initializeArm7()
     snd_setMasterEnable(true);
     sSoundIpcService.Start();
     sRtcIpcService.Start();
+    sBrightnessIpcService.Start();
 
     initializeVCountIrq();
 
