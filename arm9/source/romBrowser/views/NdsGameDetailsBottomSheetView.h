@@ -13,7 +13,8 @@ class NdsGameDetailsBottomSheetView : public BottomSheetView
 public:
     void SetGraphics(const ChipView::VramToken& chipVramToken)
     {
-        _cheatsChip->SetGraphics(chipVramToken);
+        if (_cheatsChip)
+            _cheatsChip->SetGraphics(chipVramToken);
         _favoriteChip->SetGraphics(chipVramToken);
     }
 
@@ -24,7 +25,7 @@ public:
 
     void Focus(FocusManager& focusManager) override
     {
-        focusManager.Focus(_cheatsChip);
+        focusManager.Focus(_cheatsChip ? _cheatsChip : _favoriteChip);
     }
 
     SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;

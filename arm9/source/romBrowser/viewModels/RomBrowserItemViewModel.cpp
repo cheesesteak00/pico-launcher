@@ -1,7 +1,7 @@
 #include "common.h"
 #include "romBrowser/IRomBrowserController.h"
 #include "RomBrowserViewModel.h"
-#include "romBrowser/FileType/Nds/NdsFileType.h"
+#include "romBrowser/FileType/FileTypeClassification.h"
 #include "RomBrowserItemViewModel.h"
 
 void RomBrowserItemViewModel::Activate()
@@ -25,7 +25,9 @@ void RomBrowserItemViewModel::ShowGameInfo()
     if (_index >= 0)
     {
         const auto& item = _romBrowserController->GetRomBrowserViewModel()->GetFileInfoManager().GetItem(_index);
-        if (item.GetFileType() == &NdsFileType::sInstance)
+        const auto classification = item.GetFileType()->GetClassification();
+        if (classification != FileTypeClassification::Folder
+            && classification != FileTypeClassification::Unknown)
         {
             _romBrowserController->ShowGameInfo(item);
         }

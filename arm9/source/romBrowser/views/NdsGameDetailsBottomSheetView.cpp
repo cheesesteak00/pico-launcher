@@ -7,22 +7,28 @@
 #include "smallHeartIcon.h"
 #include "smallHeartIconFilled.h"
 #include "../IRomBrowserController.h"
+#include "../FileInfo.h"
+#include "romBrowser/FileType/Nds/NdsFileType.h"
 #include "NdsGameDetailsBottomSheetView.h"
 
 NdsGameDetailsBottomSheetView::NdsGameDetailsBottomSheetView(
     IRomBrowserController* romBrowserController, const MaterialColorScheme* materialColorScheme,
     const IFontRepository* fontRepository)
     : _romBrowserController(romBrowserController)
-    , _cheatsChip(ChipView::CreateShared(md::sys::color::surfaceContainerLow, materialColorScheme, fontRepository))
     , _favoriteChip(ChipView::CreateShared(md::sys::color::surfaceContainerLow, materialColorScheme, fontRepository))
 {
-    _cheatsChip->SetText(u"Cheats");
-    _cheatsChip->SetSelected(false);
-    _cheatsChip->SetAction([] (ChipView*, void* arg)
+    // Cheats come from usrcheat.dat keyed by the NDS FastFileRef, so they only apply to NDS roms.
+    if (romBrowserController->GetTriggerFileInfo().GetFileType() == &NdsFileType::sInstance)
     {
-        ((NdsGameDetailsBottomSheetView*)arg)->OnCheatsActivated();
-    }, this);
-    AddChildTail(_cheatsChip.GetPointer());
+        _cheatsChip = ChipView::CreateShared(md::sys::color::surfaceContainerLow, materialColorScheme, fontRepository);
+        _cheatsChip->SetText(u"Cheats");
+        _cheatsChip->SetSelected(false);
+        _cheatsChip->SetAction([] (ChipView*, void* arg)
+        {
+            ((NdsGameDetailsBottomSheetView*)arg)->OnCheatsActivated();
+        }, this);
+        AddChildTail(_cheatsChip.GetPointer());
+    }
     _favoriteChip->SetText(u"Favorite");
     _favoriteChip->SetAction([] (ChipView*, void* arg)
     {
@@ -69,8 +75,15 @@ void NdsGameDetailsBottomSheetView::InitVram(const VramContext& vramContext)
 void NdsGameDetailsBottomSheetView::Update()
 {
     BottomSheetView::Update();
-    _cheatsChip->SetPosition(92, _position.y + 21);
-    _favoriteChip->SetPosition(162, _position.y + 21);
+    if (_cheatsChip)
+    {
+        _cheatsChip->SetPosition(92, _position.y + 21);
+        _favoriteChip->SetPosition(162, _position.y + 21);
+    }
+    else
+    {
+        _favoriteChip->SetPosition(92, _position.y + 21);
+    }
 }
 
 void NdsGameDetailsBottomSheetView::Draw(GraphicsContext& graphicsContext)
@@ -87,6 +100,8 @@ void NdsGameDetailsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 SharedPtr<View> NdsGameDetailsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus,
     FocusMoveDirection direction, View* source)
 {
+    if (!_cheatsChip)
+        return nullptr;
     if (currentFocus.GetPointer() == _cheatsChip.GetPointer() && direction == FocusMoveDirection::Right)
         return _favoriteChip;
     else if (currentFocus.GetPointer() == _favoriteChip.GetPointer() && direction == FocusMoveDirection::Left)
