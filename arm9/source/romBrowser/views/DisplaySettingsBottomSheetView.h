@@ -35,6 +35,7 @@ private:
     DisplaySettingsViewModel* _viewModel;
 
     SharedPtr<Label2DView> _titleLabel;
+    SharedPtr<IconButton2DView> _themeButton;
     SharedPtr<Label2DView> _layoutLabel;
     SharedPtr<Label2DView> _sortingLabel;
     SharedPtr<Label2DView> _filtersLabel;

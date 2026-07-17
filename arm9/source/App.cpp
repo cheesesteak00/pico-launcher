@@ -18,7 +18,6 @@
 #include "romBrowser/views/ChipView.h"
 #include "picoLoaderBootstrap.h"
 #include "romBrowser/DisplayMode/RomBrowserDisplayModeFactory.h"
-#include "romBrowser/Theme/Material/MaterialThemeFileIconFactory.h"
 #include "romBrowser/views/NdsGameDetailsBottomSheetView.h"
 #include "romBrowser/views/cheats/CheatsBottomSheetView.h"
 #include "romBrowser/views/DisplaySettingsBottomSheetView.h"
@@ -103,9 +102,6 @@ void App::LoadTheme()
     _topBackground->LoadResources(*_theme, _subVramContext);
     _bottomBackground = _theme->CreateRomBrowserBottomBackground();
     _bottomBackground->LoadResources(*_theme, _mainVramContext);
-
-    _materialThemeFileIconFactory = std::make_unique<MaterialThemeFileIconFactory>(
-        &_theme->GetMaterialColorScheme(), _theme->GetFontRepository());
 }
 
 void App::VCountIrq()
@@ -141,7 +137,7 @@ void App::Run()
         &_romBrowserBottomScreenViewModel,
         RomBrowserDisplayModeFactory().GetRomBrowserDisplayMode(
             _romBrowserController.GetRomBrowserDisplaySettings().layout),
-        _materialThemeFileIconFactory.get(),
+        _theme->GetThemeFileIconFactory(),
         _theme->GetRomBrowserViewFactory(),
         &_vblankTextureLoader);
     _romBrowserBottomScreenView->InitVram(_mainVramContext);
@@ -256,6 +252,7 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
     {
         case RomBrowserStateTrigger::None:
         case RomBrowserStateTrigger::Launch:
+        case RomBrowserStateTrigger::GotoSettingsScreen:
         {
             break;
         }
@@ -357,7 +354,7 @@ void App::HandleFolderLoadDoneTrigger()
     _romBrowserTopScreenView = RomBrowserTopScreenView::CreateShared(
         _romBrowserController.GetRomBrowserViewModel(),
         displayMode,
-        _materialThemeFileIconFactory.get(),
+        _theme->GetThemeFileIconFactory(),
         _theme->GetRomBrowserViewFactory(),
         _theme->GetFontRepository(),
         &_theme->GetMaterialColorScheme());
@@ -376,7 +373,7 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
     _romBrowserBottomScreenView = RomBrowserBottomScreenView::CreateShared(
         &_romBrowserBottomScreenViewModel,
         displayMode,
-        _materialThemeFileIconFactory.get(),
+        _theme->GetThemeFileIconFactory(),
         _theme->GetRomBrowserViewFactory(),
         &_vblankTextureLoader);
     _romBrowserBottomScreenView->InitVram(_mainVramContext);
@@ -384,7 +381,7 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
     _romBrowserTopScreenView = RomBrowserTopScreenView::CreateShared(
         _romBrowserController.GetRomBrowserViewModel(),
         displayMode,
-        _materialThemeFileIconFactory.get(),
+        _theme->GetThemeFileIconFactory(),
         _theme->GetRomBrowserViewFactory(),
         _theme->GetFontRepository(),
         &_theme->GetMaterialColorScheme());
@@ -392,16 +389,6 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
     _romBrowserBottomScreenView->RomBrowserViewModelInvalidated(_mainVramContext);
     if (newState == RomBrowserState::Browser)
         _romBrowserBottomScreenView->Focus(_focusManager);
-}
-
-bool App::IsRomBrowserVisible() const
-{
-    const auto& stateMachine = _romBrowserController.GetStateMachine();
-    auto curState = stateMachine.GetCurrentState();
-    return curState == RomBrowserState::Browser
-        || curState == RomBrowserState::GameInfo
-        || curState == RomBrowserState::DisplaySettings
-        || curState == RomBrowserState::Launching;
 }
 
 void App::Update()
@@ -419,8 +406,10 @@ void App::Update()
         HandleTrigger(stateMachine.GetLastTrigger(), curState);
     }
 
-    bool isRomBrowserVisible = IsRomBrowserVisible();
-    if (isRomBrowserVisible && !_exit && curState != RomBrowserState::Launching)
+    bool isRomBrowserVisible = _romBrowserBottomScreenViewModel.IsRomBrowserVisible();
+    if (isRomBrowserVisible && !_exit &&
+        curState != RomBrowserState::Launching &&
+        curState != RomBrowserState::GoingToSettingsScreen)
     {
         HandleInput();
     }
@@ -473,7 +462,7 @@ void App::Draw()
     if (_bottomBackground)
         _bottomBackground->Draw(mainGraphicsContext);
 
-    if (!_changeDisplayMode && IsRomBrowserVisible())
+    if (!_changeDisplayMode && _romBrowserBottomScreenViewModel.IsRomBrowserVisible())
     {
         _romBrowserTopScreenView->Draw(subGraphicsContext);
     }
@@ -516,7 +505,7 @@ void App::VBlank()
 
     _dialogPresenter.VBlank();
 
-    if (IsRomBrowserVisible())
+    if (_romBrowserBottomScreenViewModel.IsRomBrowserVisible())
     {
         _romBrowserTopScreenView->VBlank();
     }
